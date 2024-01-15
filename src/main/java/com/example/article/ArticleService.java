@@ -3,6 +3,7 @@ package com.example.article;
 import com.example.article.dto.ArticleDto;
 import com.example.article.entity.Article;
 import com.example.article.repo.ArticleRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,14 @@ public class ArticleService {
     }
 
     public List<ArticleDto> readAll() {
+        log.debug("call readAll()");
         List<ArticleDto> articleList = new ArrayList<>();
         for (Article article: repository.findAll()) {
+            log.trace(article.toString());
             articleList.add(ArticleDto.fromEntity(article));
         }
+
+        log.debug(articleList.toString());
 
         return articleList;
         // stream
@@ -37,7 +42,15 @@ public class ArticleService {
     }
 
     public ArticleDto read(Long id) {
-        Article article = repository.findById(id).orElseThrow();
+        // Article article = repository.findById(id).orElseThrow();
+        Optional<Article> optionalArticle = repository.findById(id);
+
+        // 만약 id에 해당하는 article 이 없다.
+        if (optionalArticle.isEmpty()) {
+            log.warn(String.format("article with id : %d not present", id));
+            optionalArticle.orElseThrow();
+        }
+        Article article = optionalArticle.get();
         return ArticleDto.fromEntity(article);
     }
 
